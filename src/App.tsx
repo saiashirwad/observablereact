@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { createStore } from "./store/createStore"
-import { useObservable } from "./store/useObservable"
+import { useObservable, useSelector } from "./store/useObservable"
 import { TodoStore } from "./stores/TodoStore"
 
 const todoStore = createStore(TodoStore)
@@ -8,11 +8,20 @@ const todoStore = createStore(TodoStore)
 function TodoList() {
 	const [newTodo, setNewTodo] = useState("")
 	const todos = useObservable(todoStore.todos)
+	const completed = useSelector(
+		todoStore.todos,
+		(todos) => todos.filter((t) => t.completed).length,
+	)
+	const pending = useSelector(
+		todoStore.todos,
+		(todos) => todos.filter((t) => !t.completed).length,
+	)
 
 	return (
 		<div>
 			<div>Total: {todos.length}</div>
-			<div>Completed: {todos.filter((t) => t.completed).length}</div>
+			<div>Completed: {completed}</div>
+			<div>Pending: {pending}</div>
 			<div>
 				<input
 					type="text"

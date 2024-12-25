@@ -10,3 +10,11 @@ export function useObservable<T>(observable: IObservable<T>) {
 
 	return value
 }
+
+export function useSelector<T, R>(
+	observable: IObservable<T>,
+	selector: (value: T) => R,
+) {
+	const value = useObservable(observable)
+	return selector(value)
+}
