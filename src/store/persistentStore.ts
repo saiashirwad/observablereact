@@ -1,3 +1,4 @@
+import { Effect, pipe } from "effect"
 import { Observable } from "./observable"
 
 export class PersistentObservable<T> extends Observable<T> {
@@ -10,8 +11,12 @@ export class PersistentObservable<T> extends Observable<T> {
 	}
 
 	set(newValue: T) {
-		super.set(newValue)
-		localStorage.setItem(this.key, JSON.stringify(newValue))
+		return pipe(
+			super.set(newValue),
+			Effect.map(() =>
+				localStorage.setItem(this.key, JSON.stringify(newValue)),
+			),
+		)
 	}
 }
 

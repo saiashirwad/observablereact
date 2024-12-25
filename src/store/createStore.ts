@@ -1,4 +1,4 @@
-import { Constructor } from "./observable"
+import type { Constructor } from "./observable"
 
 export function createStore<T>(StoreClass: Constructor<T>): T {
 	let store: T

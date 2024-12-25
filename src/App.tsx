@@ -4,6 +4,7 @@ import { useObservable } from "./store/useObservable"
 import { CounterStore } from "./stores/CounterStore"
 import { SettingsStore } from "./stores/SettingsStore"
 import { TodoStore } from "./stores/TodoStore"
+import { Effect } from "effect"
 
 const counterStore = createStore(CounterStore)
 
@@ -17,8 +18,12 @@ function Settings() {
 	return (
 		<div>
 			<div>Theme: {theme}</div>
-			<button onClick={() => settingsStore.theme.set("light")}>Light</button>
-			<button onClick={() => settingsStore.theme.set("dark")}>Dark</button>
+			<button onClick={() => Effect.runSync(settingsStore.theme.set("light"))}>
+				Light
+			</button>
+			<button onClick={() => Effect.runSync(settingsStore.theme.set("dark"))}>
+				Dark
+			</button>
 		</div>
 	)
 }
@@ -29,8 +34,8 @@ function TodoList() {
 
 	return (
 		<div>
-			<div>Total: {todos.length}</div>
-			<div>Completed: {todos.filter((t) => t.completed).length}</div>
+			<div>Total: {todos?.length ?? 0}</div>
+			<div>Completed: {todos?.filter((t) => t.completed).length ?? 0}</div>
 			<div>
 				<input
 					type="text"
@@ -39,21 +44,20 @@ function TodoList() {
 				/>
 				<button
 					onClick={() => {
-						todoStore.addTodo({ id: newTodo, completed: false })
+						Effect.runSync(todoStore.addTodo({ id: newTodo, completed: false }))
 						setNewTodo("")
 					}}
 				>
 					Add
 				</button>
 			</div>
-			<button onClick={() => todoStore.clearTodos()}>Clear</button>
 			<ul>
-				{todos.map((todo) => (
+				{todos?.map((todo) => (
 					<li key={todo.id}>
 						<input
 							type="checkbox"
 							checked={todo.completed}
-							onChange={() => todoStore.toggleTodo(todo)}
+							onChange={() => Effect.runSync(todoStore.toggleTodo(todo.id))}
 						/>
 						{todo.id}
 					</li>
@@ -69,19 +73,10 @@ function Counter() {
 	return (
 		<div>
 			<p>Count: {count}</p>
-			<p>Count: {count}</p>
-			<button
-				onClick={() => {
-					counterStore.increment()
-				}}
-			>
+			<button onClick={() => Effect.runSync(counterStore.increment())}>
 				+
 			</button>
-			<button
-				onClick={() => {
-					counterStore.decrement()
-				}}
-			>
+			<button onClick={() => Effect.runSync(counterStore.decrement())}>
 				-
 			</button>
 		</div>

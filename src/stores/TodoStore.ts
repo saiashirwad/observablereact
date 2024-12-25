@@ -1,3 +1,5 @@
+import { Effect } from "effect"
+import { updateState } from "../store/effect"
 import { Observable } from "../store/observable"
 
 type Todo = {
@@ -9,25 +11,33 @@ export class TodoStore {
 	todos = new Observable<Todo[]>([])
 
 	addTodo(todo: Todo) {
-		this.todos.set([...this.todos.get(), todo])
-	}
-
-	removeTodo(todo: Todo) {
-		this.todos.set(this.todos.get().filter((t) => t.id !== todo.id))
-	}
-
-	clearTodos() {
-		this.todos.set([])
-	}
-
-	toggleTodo(todo: Todo) {
-		this.todos.set(
-			this.todos.get().map((t) => {
-				if (t.id === todo.id) {
-					return { ...t, completed: !t.completed }
-				}
-				return t
+		return updateState(
+			this.todos,
+			Effect.try({
+				try: () => todo,
+				catch: (error) => ({
+					type: "UpdateError",
+					message: String(error),
+				}),
 			}),
+			(todos, newTodo) => [...todos, newTodo],
+		)
+	}
+
+	toggleTodo(todoId: string) {
+		return updateState(
+			this.todos,
+			Effect.try({
+				try: () => undefined,
+				catch: (error) => ({
+					type: "UpdateError",
+					message: String(error),
+				}),
+			}),
+			(todos) =>
+				todos.map((todo) =>
+					todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
+				),
 		)
 	}
 }

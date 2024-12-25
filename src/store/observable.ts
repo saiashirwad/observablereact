@@ -1,11 +1,13 @@
+import { Effect } from "effect"
+
 export type Constructor<T> = new (...args: any[]) => T
 
 export type Listener = () => void
 
 export interface IObservable<T> {
-	get(): T
-	set(value: T): void
-	subscribe(listener: Listener): () => void
+	get(): Effect.Effect<T, never, never>
+	set(value: T): Effect.Effect<void, never, never>
+	subscribe(listener: Listener): Effect.Effect<() => void, never, never>
 }
 
 export class Observable<T> implements IObservable<T> {
@@ -16,26 +18,32 @@ export class Observable<T> implements IObservable<T> {
 		this.value = initialValue
 	}
 
-	get() {
-		return this.value
+	get(): Effect.Effect<T, never, never> {
+		return Effect.sync(() => this.value)
 	}
 
-	set(newValue: T) {
-		if (this.value !== newValue) {
-			this.value = newValue
-			this.notifyListeners()
-		}
+	set(newValue: T): Effect.Effect<void, never, never> {
+		return Effect.sync(() => {
+			if (this.value !== newValue) {
+				this.value = newValue
+				this.notifyListeners()
+			}
+		})
 	}
 
-	subscribe(listener: Listener) {
-		this.listeners.add(listener)
-		return () => {
-			this.listeners.delete(listener)
-		}
+	subscribe(listener: Listener): Effect.Effect<() => void, never, never> {
+		return Effect.sync(() => {
+			this.listeners.add(listener)
+			return () => {
+				this.listeners.delete(listener)
+			}
+		})
 	}
 
-	protected notifyListeners() {
-		this.listeners.forEach((listener) => listener())
+	protected notifyListeners(): Effect.Effect<void, never, never> {
+		return Effect.sync(() => {
+			this.listeners.forEach((listener) => listener())
+		})
 	}
 }
 
