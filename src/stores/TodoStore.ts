@@ -1,29 +1,34 @@
-import { Observable } from "../store/observable"
+import { createId } from "@paralleldrive/cuid2"
+import { PersistentObservable } from "../store/persistentStore"
 
 type Todo = {
 	id: string
+	text: string
 	completed: boolean
 }
 
 export class TodoStore {
-	todos = new Observable<Todo[]>([])
+	todos = new PersistentObservable<Todo[]>([], "todos")
 
-	addTodo(todo: Todo) {
-		this.todos.set([...this.todos.get(), todo])
+	addTodo(text: string) {
+		this.todos.set([
+			...this.todos.get(),
+			{ id: createId(), text, completed: false },
+		])
 	}
 
-	removeTodo(todo: Todo) {
-		this.todos.set(this.todos.get().filter((t) => t.id !== todo.id))
+	removeTodo(id: string) {
+		this.todos.set(this.todos.get().filter((t) => t.id !== id))
 	}
 
 	clearTodos() {
 		this.todos.set([])
 	}
 
-	toggleTodo(todo: Todo) {
+	toggleTodo(id: string) {
 		this.todos.set(
 			this.todos.get().map((t) => {
-				if (t.id === todo.id) {
+				if (t.id === id) {
 					return { ...t, completed: !t.completed }
 				}
 				return t
